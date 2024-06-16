@@ -46,7 +46,7 @@ async def handle_business_message(message: types.Message):
     # Ignore requests from a specific user ID but save the message
     if user_id == 'ADMIN_ID':
         return
-    print(chat_history[user_id])
+        
     # Prepare the payload for the API request
     payload = {
         "model": "MODEL_NAME",
