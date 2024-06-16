@@ -3,10 +3,9 @@ import json
 
 import asyncio
 import aiohttp
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, types
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram import types
 
 TOKEN = "TOKEN"
 dp = Dispatcher()
