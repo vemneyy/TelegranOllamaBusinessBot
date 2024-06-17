@@ -7,20 +7,26 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
-TOKEN = "TOKEN"
+TOKEN = "token"
+ADMIN_ID = "admin_id"
+MODEL_NAME = "model"
+API_URL = 'http://localhost:11434/api/chat'
+CHAT_HISTORY_FILE = 'users_history.json'
+
 dp = Dispatcher()
+bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
 
 def read_chat_history():
     if not os.path.exists('users_history.json'):
         return {}
-    with open('users_history.json', 'r', encoding='utf-8') as file:
+    with open(CHAT_HISTORY_FILE, 'r', encoding='utf-8') as file:
         return json.load(file)
 
 
 # Function to write chat history to a JSON file
 def write_chat_history(chat_history):
-    with open('users_history.json', 'w', encoding='utf-8') as file:
+    with open(CHAT_HISTORY_FILE, 'w', encoding='utf-8') as file:
         json.dump(chat_history, file, indent=4, ensure_ascii=False)
 
 
@@ -43,23 +49,23 @@ async def handle_business_message(message: types.Message):
     write_chat_history(chat_history)
 
     # Ignore requests from a specific user ID but save the message
-    if user_id == 'ADMIN_ID':
+    if user_id == ADMIN_ID:
         return
-        
+
     # Prepare the payload for the API request
     payload = {
-        "model": "MODEL_NAME",
+        "model": MODEL_NAME,
         "messages": chat_history[user_id]
     }
 
     async with aiohttp.ClientSession() as session:
-        url = 'http://localhost:11434/api/chat'
+        url = API_URL
         headers = {
             'Content-Type': 'application/json'
         }
 
         async with session.post(url, json=payload, headers=headers) as response:
-            # Read the ndjson response line by line and accumulate the assistant's content
+            # Read the response line by line and accumulate the assistant's content
             ai_response = ""
             async for line in response.content:
                 if line:
@@ -78,13 +84,12 @@ async def handle_business_message(message: types.Message):
 
 
 async def start():
-    api = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp.business_message.register(handle_business_message)
 
     try:
-        await dp.start_polling(api)
+        await dp.start_polling(bot)
     finally:
-        await api.session.close()
+        await bot.session.close()
 
 
 if __name__ == "__main__":
